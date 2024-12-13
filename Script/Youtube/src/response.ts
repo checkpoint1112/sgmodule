@@ -8,10 +8,12 @@ import { Guide } from '../lib/protobuf/response/guide_pb'
 import { Player, BackgroundPlayer, TranslationLanguage, CaptionTrack } from '../lib/protobuf/response/player_pb'
 import { Setting, SubSetting, SettingItem } from '../lib/protobuf/response/setting_pb'
 import { Watch } from '../lib/protobuf/response/watch_pb'
+import { Entity } from '../lib/protobuf/response/frameworkUpdate_pb'
 
 import { YouTubeMessage } from './youtube'
 import { $ } from '../lib/env'
 import { translateURL } from '../lib/googleTranslate'
+import { protoBase64 } from '@bufbuild/protobuf'
 
 export class BrowseMessage extends YouTubeMessage {
   constructor (msgType: any = Browse, name: string = 'Browse') {
@@ -19,20 +21,20 @@ export class BrowseMessage extends YouTubeMessage {
   }
 
   async pure (): Promise<YouTubeMessage> {
-    this.iterate(this.message, 'richGridContents', (obj) => {
-      for (let i = obj.richGridContents.length - 1; i >= 0; i--) {
+    this.iterate(this.message, 'sectionListSupportedRenderers', (obj) => {
+      for (let i = obj.sectionListSupportedRenderers.length - 1; i >= 0; i--) {
         this.removeCommonAD(obj, i)
         this.removeShorts(obj, i)
       }
     })
-    this.removeFrameworkUpdateAd()
+    // this.removeFrameworkUpdateAd()
     await this.translate()
     return this
   }
 
   removeCommonAD (obj: any, index: number): void {
-    const content = obj.richGridContents[index]
-    const richItemContent = content?.richItemRenderer?.richItemContent
+    const content = obj.sectionListSupportedRenderers[index]
+    const richItemContent = content?.itemSectionRenderer?.richItemContent
     for (let j = richItemContent?.length - 1; j >= 0; j--) {
       if (this.isAdvertise(richItemContent[j])) {
         richItemContent.splice(j, 1)
@@ -42,9 +44,9 @@ export class BrowseMessage extends YouTubeMessage {
   }
 
   removeShorts (obj: any, index: number): void {
-    const richSectionRenderer = obj.richGridContents[index]?.richSectionRenderer
-    if (this.isShorts(richSectionRenderer)) {
-      obj.richGridContents.splice(index, 1)
+    const shelfRenderer = obj.sectionListSupportedRenderers[index]?.shelfRenderer
+    if (this.isShorts(shelfRenderer)) {
+      obj.sectionListSupportedRenderers.splice(index, 1)
       this.needProcess = true
     }
   }
@@ -117,8 +119,14 @@ export class BrowseMessage extends YouTubeMessage {
 
     for (let j = mutations.length - 1; j >= 0; j--) {
       const mutation = mutations[j]
-      const unknown = this.listUnknownFields(mutation?.payload)?.[0]
-      if (this.checkBufferIsAd(unknown)) {
+      const entity = Entity.fromBinary(protoBase64.dec(decodeURIComponent(mutation.entityKey)))
+      let adFlag = this.blackEml.includes(entity.name)
+      if (!adFlag && this.checkUnknownFiled(mutation?.payload)) {
+        adFlag = true
+        this.blackEml.push(entity.name)
+        this.needSave = true
+      }
+      if (adFlag) {
         mutations.splice(j, 1)
         this.needProcess = true
       }
@@ -300,59 +308,40 @@ export class SettingMessage extends YouTubeMessage {
 
   pure (): YouTubeMessage {
     // 增加 PIP
-    this.iterate(this.message, 'categoryId', (obj) => {
-      if (obj.categoryId === 10005) {
-        const trackingParams = {
-          f1: 135,
-          f2: 20434,
-          f3: 2,
-          timeInfo: this.message.trackingParams.timeInfo
-        }
-        const fakePIPSetting = new SubSetting({
+    this.iterate(this.message.settingItems, 'categoryId', (obj) => {
+      if (obj.categoryId === 10135) {
+        const PipSettingRender = new SubSetting({
           settingBooleanRenderer: {
             itemId: 0,
             enableServiceEndpoint: {
-              trackingParams,
               setClientSettingEndpoint: {
-                settingDatas: {
+                settingData: {
                   clientSettingEnum: { item: 151 },
                   boolValue: true
                 }
               }
             },
             disableServiceEndpoint: {
-              trackingParams,
               setClientSettingEndpoint: {
-                settingDatas: {
+                settingData: {
                   clientSettingEnum: { item: 151 },
                   boolValue: false
                 }
               }
-            },
-            clickTrackingParams: trackingParams
+            }
           }
         })
-
-        obj.subSettings.push(fakePIPSetting)
+        obj.subSettings.push(PipSettingRender)
       }
     })
     // 增加后台播放
     const fakePlayBackgroundSetting = new SettingItem({
-      settingCategoryEntryRenderer: {
-        f2: 1,
-        f3: 1,
-        trackingParams: {
-          f1: 2,
-          f2: 20020,
-          f3: 8,
-          timeInfo: this.message.trackingParams.timeInfo
-        },
-        f6: 0,
-        f7: 1,
-        f8: 1,
-        f9: 1,
-        f10: 1,
-        f12: 1
+      backgroundPlayBackSettingRenderer: {
+        backgroundPlayback: true,
+        download: true,
+        downloadQualitySelection: true,
+        smartDownload: true,
+        icon: { iconType: 1093 }
       }
     })
     this.message.settingItems.push(fakePlayBackgroundSetting)
@@ -361,22 +350,6 @@ export class SettingMessage extends YouTubeMessage {
   }
 }
 
-// export class WatchMessage extends PlayerMessage {
-//   constructor (msgType: any = Watch, name: string = 'Watch') {
-//     super(msgType, name)
-//   }
-//
-//   pure (): YouTubeMessage {
-//     const tempMsg = this.message
-//     this.iterate(this.message, 'player', (obj, stack) => {
-//       this.message = obj.player
-//       super.pure()
-//       this.message = tempMsg
-//       stack.length = 0
-//     })
-//     return this
-//   }
-// }
 export class WatchMessage extends YouTubeMessage {
   player: PlayerMessage
   next: NextMessage
