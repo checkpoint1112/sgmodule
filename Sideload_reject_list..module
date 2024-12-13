@@ -1,0 +1,11 @@
+#!name=Sideload_reject_list
+#!homepage=https://github.com/checkpoint1112/sgmodule/tree/master
+#!desc=Sideload DenyList Links
+[Rule]
+DOMAIN-SUFFIX,ocsp.apple.com,REJECT
+DOMAIN-SUFFIX,ocsp2.apple.com,REJECT
+DOMAIN-SUFFIX,valid.apple.com,REJECT
+DOMAIN-SUFFIX,crl.apple.com,REJECT
+DOMAIN-SUFFIX,certs.apple.com,REJECT
+DOMAIN-SUFFIX,appattest.apple.com,REJECT
+DOMAIN-SUFFIX,vpp.itunes.apple.com,REJECT
