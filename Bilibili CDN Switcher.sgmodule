@@ -1,0 +1,14 @@
+#!name=Bilibili CDN Switcher
+#!desc=替換 Bilibili 視頻播放的 CDN 為指定地址（例如 cn-jssz-cm-02-07.bilivideo.com）
+#!author=Grok 3 修改自 ddgksf2013
+#!homepage=https://github.com/ddgksf2013/Modules
+#!tgchannel=https://t.me/ddgksf2021
+#!moduleUrl=https://github.com/your-username/your-repo/raw/main/BilibiliCDNSwitcher.sgmodule
+#!updateTime=2025-03-04
+
+[Script]
+# ～ Bilibili CDN Switcher
+Bilibili.CDN.Replace = type=http-response, pattern=^https?:\/\/api\.bilibili\.com\/(x\/player\/wbi\/playurl|pgc\/player\/web\/v2\/playurl|x\/player\/playurl|pgc\/player\/web\/playurl|pugv\/player\/web\/playurl), script-path=https://github.com/checkpoint1112/sgmodule/blob/c651e873e6540fbe01ba9a9608c61c547bf21c95/bilibili-cdn-switcher.js, requires-body=true, max-size=-1, timeout=60
+
+[MITM]
+hostname = %APPEND% api.bilibili.com
