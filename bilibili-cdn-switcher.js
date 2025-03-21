@@ -1,6 +1,6 @@
 // bilibili-cdn-switcher.js
 (function () {
-    const TARGET_CDN = "https://cn-gdsz-twsx-bcache-04.bilivideo.com/";
+    const TARGET_CDN = "cn-gdsz-twsx-bcache-04.bilivideo.com";
 
     let body = $response.body;
     if (!body) {
