@@ -3,8 +3,6 @@
 
 
 [Rule]
-DOMAIN-SET,https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/refs/heads/master/rule/Shadowrocket/Advertising/Advertising_Domain.list,REJECT
-RULE-SET,https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/Advertising/Advertising.list,REJECT
 DOMAIN-SUFFIX,asdkd.tutuapp.com,REJECT
 DOMAIN-SUFFIX,rfrl.pw,REJECT
 DOMAIN-SUFFIX,track.clickhubs.com,REJECT
