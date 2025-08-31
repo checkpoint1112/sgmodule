@@ -1,5 +1,8 @@
 #!name=高德地图净化[墨鱼版]
-#!desc=UpdateTime        2025-08-22
+#!desc=UpdateTime        2025-08-30
+
+[Rule]
+DOMAIN-SUFFIX,optimus-ads.amap.com,DIRECT
 
 [Rewrite]
 # > 高德地图_路线规划下方广告@ddgksf2013
@@ -16,7 +19,7 @@
 ^https?:\/\/.*\.amap\.com\/ws\/valueadded\/weather - reject-dict
 
 [Script]
-# > 高德地图_amdc处理[Anti已将Amdc分流删除,故更换屏蔽策略]@ddgksf2013
+# > 高德地图_amdc处理@ddgksf2013
 http-response ^http:\/\/amdc\.m\.taobao\.com script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/amdc.js, requires-body=true, timeout=60, tag=amdc
 
 # > 高德地图_底部tab栏角标@ddgksf2013
