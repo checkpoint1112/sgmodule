@@ -34,4 +34,4 @@ request if ${Enabled} == true && ${url} ~= /^https?:\/\/[^\/]+:4480(\/upgcxcode\
 
 [MITM]
 hostname = %APPEND% *.bilivideo.com, *.mcdn.bilivideo.cn, *.akamaized.net
-h2 = true
+
