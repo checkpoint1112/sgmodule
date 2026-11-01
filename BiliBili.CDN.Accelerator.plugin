@@ -1,0 +1,27 @@
+#!name = BiliBili CDN Accelerator
+#!desc = 將 Bilibili App 的 bilivideo/akamaized 媒體請求固定改寫到自訂 CDN。保留原路徑、查詢簽名與 Range；不是多線程下載器。
+#!author = M365 Copilot for Alex Ho
+#!homepage = https://github.com/MrTangLuyao/Bilibili-thread-ripper
+#!system = iOS,iPadOS
+#!system_version = 15
+#!version = 0.1.0
+#!date = 2026-11-01
+
+[Argument]
+Enabled = switch,true,tag=啟用 CDN 改寫,desc=關閉後不修改任何媒體請求
+CDN = input,"cn-sdjn-fx-bcache-02.bilivideo.com",tag=自訂 CDN,desc=只填主機名，不要填 https:// 或路徑
+Debug = switch,false,tag=除錯標記,desc=開啟後為請求加入 X-BTR-Loon 標頭，方便在 Loon 記錄中辨認
+
+[Rewrite]
+# bilivideo.com：保留 scheme、path、query，只替換 hostname；目標主機再次匹配時只會替換成相同 URL，不會形成重新導向迴圈。
+request if ${Enabled} == true && ${url} ~= /^https:\/\/[^\/]*\.bilivideo\.com(?::\d+)?(\/.*)$/i as media then url.replace("https://${CDN}${media.1}")
+
+# 部分播放地址可能來自 Akamai；同樣轉到指定 bilivideo CDN。
+request if ${Enabled} == true && ${url} ~= /^https:\/\/[^\/]*\.akamaized\.net(?::\d+)?(\/.*)$/i as akamai then url.replace("https://${CDN}${akamai.1}")
+
+# 可選除錯標頭。它不參與簽名，也不改動 Range。
+request if ${Enabled} == true && ${Debug} == true && ${url} ~= /^https:\/\/cn-sdjn-fx-bcache-02\.bilivideo\.com(?=[:\/])/i then request.header.set("X-BTR-Loon", "fixed-cdn-v0.1.0")
+
+[MitM]
+hostname = %APPEND% *.bilivideo.com, *.akamaized.net, cn-sdjn-fx-bcache-02.bilivideo.com
+h2 = true
